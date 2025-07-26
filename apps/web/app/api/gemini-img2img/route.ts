@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { GoogleGenAI, Modality } from '@google/genai'
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3'
 import { v4 as uuidv4 } from 'uuid'
+import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
+import { cookies } from 'next/headers'
+import type { Database } from '@/lib/supabase'
 
 /* ------------------------------------------------------------------ */
 /* 1)  클라이언트 & S3 초기화                                          */
@@ -30,11 +33,21 @@ Soft lighting, pastel tones, and a subtle glow are encouraged.
 /* ------------------------------------------------------------------ */
 export async function POST(req: NextRequest) {
   try {
+    const supabase = createRouteHandlerClient<Database>({ cookies })
+
+    // 사용자 인증 확인
+    const {
+      data: { session },
+    } = await supabase.auth.getSession()
+    if (!session?.user) {
+      return NextResponse.json({ error: '인증이 필요합니다.' }, { status: 401 })
+    }
+
     /* 2‑1) 클라이언트 데이터 추출 */
-    const { imageBase64, mimeType } = await req.json()
-    if (!imageBase64 || !mimeType) {
+    const { imageBase64, mimeType, userImageId, emotionTags } = await req.json()
+    if (!imageBase64 || !mimeType || !userImageId) {
       return NextResponse.json(
-        { error: 'Missing imageBase64 or mimeType' },
+        { error: 'Missing required fields' },
         { status: 400 },
       )
     }
@@ -52,7 +65,7 @@ export async function POST(req: NextRequest) {
     })) as any
 
     const part = genRes.candidates[0]?.content?.parts.find(
-      (p) => 'inlineData' in p,
+      (p: any) => 'inlineData' in p,
     )
     if (!part?.inlineData?.data) {
       return NextResponse.json(
@@ -78,8 +91,41 @@ export async function POST(req: NextRequest) {
     const s3Url = `https://${process.env.S3_BUCKET_NAME!}.s3.${process.env
       .S3_REGION!}.amazonaws.com/${s3Key}`
 
-    /* 2‑4) 응답 */
-    return NextResponse.json({ imageUrl: s3Url, success: true })
+    /* 2‑4) 생성된 이미지 정보를 데이터베이스에 저장 */
+    const { data: generatedImage, error: dbError } = await supabase
+      .from('generated_images')
+      .insert({
+        user_image_id: userImageId,
+        prompt: prompt,
+        generated_url: s3Url,
+      })
+      .select()
+      .single()
+
+    if (dbError) {
+      console.error('Database error:', dbError)
+      return NextResponse.json(
+        { error: 'Database save failed' },
+        { status: 500 },
+      )
+    }
+
+    /* 2‑5) 감정 태그와 생성된 이미지 매핑 */
+    if (emotionTags && emotionTags.length > 0) {
+      for (const emotionId of emotionTags) {
+        await supabase.from('image_emotions').insert({
+          generated_id: generatedImage.id,
+          emotion_id: emotionId,
+        })
+      }
+    }
+
+    /* 2‑6) 응답 */
+    return NextResponse.json({
+      imageUrl: s3Url,
+      success: true,
+      generatedImageId: generatedImage.id,
+    })
   } catch (err: any) {
     console.error('[Gemini Error]', err)
     return NextResponse.json(

@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3'
 import { v4 as uuidv4 } from 'uuid'
 import sharp from 'sharp'
+import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
+import { cookies } from 'next/headers'
+import type { Database } from '@/lib/supabase'
 
 const s3 = new S3Client({
   region: process.env.S3_REGION!,
@@ -12,6 +15,16 @@ const s3 = new S3Client({
 })
 
 export async function POST(req: NextRequest) {
+  const supabase = createRouteHandlerClient<Database>({ cookies })
+
+  // 사용자 인증 확인
+  const {
+    data: { session },
+  } = await supabase.auth.getSession()
+  if (!session?.user) {
+    return NextResponse.json({ error: '인증이 필요합니다.' }, { status: 401 })
+  }
+
   const formData = await req.formData()
   const file = formData.get('file') as File
 
@@ -41,14 +54,34 @@ export async function POST(req: NextRequest) {
         Key: key,
         Body: resizedBuffer,
         ContentType: 'image/png',
-        // ACL 제거: 퍼블릭 접근은 버킷 정책으로 설정
-      })
+      }),
     )
 
     const publicUrl = `https://${process.env.S3_BUCKET_NAME!}.s3.${process.env
       .S3_REGION!}.amazonaws.com/${key}`
 
-    return NextResponse.json({ publicUrl })
+    // 4. 데이터베이스에 사용자 이미지 정보 저장
+    const { data: userImage, error: dbError } = await supabase
+      .from('user_images')
+      .insert({
+        user_id: session.user.id,
+        image_url: publicUrl,
+      })
+      .select()
+      .single()
+
+    if (dbError) {
+      console.error('Database error:', dbError)
+      return NextResponse.json(
+        { error: 'Database save failed' },
+        { status: 500 },
+      )
+    }
+
+    return NextResponse.json({
+      publicUrl,
+      userImageId: userImage.id,
+    })
   } catch (err) {
     console.error('[Upload Error]', err)
     return NextResponse.json({ error: 'Upload failed' }, { status: 500 })
