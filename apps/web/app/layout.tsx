@@ -1,17 +1,21 @@
-import { Geist, Geist_Mono } from "next/font/google"
+import type { Metadata } from 'next'
+import { Geist, Geist_Mono } from 'next/font/google'
+import './globals.css'
 
-import "@workspace/ui/globals.css"
-import { Providers } from "@/components/providers"
-
-const fontSans = Geist({
-  subsets: ["latin"],
-  variable: "--font-sans",
+const geistSans = Geist({
+  variable: '--font-geist-sans',
+  subsets: ['latin'],
 })
 
-const fontMono = Geist_Mono({
-  subsets: ["latin"],
-  variable: "--font-mono",
+const geistMono = Geist_Mono({
+  variable: '--font-geist-mono',
+  subsets: ['latin'],
 })
+
+export const metadata: Metadata = {
+  title: 'art_window',
+  description: 'art_tech1 window web',
+}
 
 export default function RootLayout({
   children,
@@ -19,11 +23,11 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en">
       <body
-        className={`${fontSans.variable} ${fontMono.variable} font-sans antialiased `}
+        className={`${geistSans.variable} ${geistMono.variable} mx-auto max-w-xl h-screen w-full antialiased`}
       >
-        <Providers>{children}</Providers>
+        {children}
       </body>
     </html>
   )
