@@ -10,11 +10,6 @@ export default function KakaoCallback() {
   const [error, setError] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
 
-  // Loading fallback 상태 처리
-  if (isLoading) {
-    return <div>로그인 처리 중...</div>
-  }
-
   useEffect(() => {
     // Use window.location instead of useSearchParams
     const urlParams = new URLSearchParams(window.location.search)
