@@ -1,24 +1,66 @@
 'use client'
-import { useEffect } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
+
+export const dynamic = 'force-dynamic'
 
 export default function KakaoCallback() {
   const router = useRouter()
-  const searchParams = useSearchParams()
+  const [error, setError] = useState(null)
+  const [isLoading, setIsLoading] = useState(true)
+
+  // Loading fallback 상태 처리
+  if (isLoading) {
+    return <div>로그인 처리 중...</div>
+  }
 
   useEffect(() => {
-    const code = searchParams.get('code')
+    // Use window.location instead of useSearchParams
+    const urlParams = new URLSearchParams(window.location.search)
+    const code = urlParams.get('code')
+    const errorParam = urlParams.get('error')
+
+    if (errorParam) {
+      //   setError('로그인이 취소되었습니다.')
+      setIsLoading(false)
+      setTimeout(() => router.push('/'), 2000)
+      return
+    }
+
     if (code) {
-      // 인가 코드를 백엔드로 전송
       fetch('/api/auth/kakao/callback', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code }),
-      }).then(() => {
-        router.push('/')
       })
+        .then((res) => {
+          if (!res.ok) throw new Error('Login failed')
+          return res.json()
+        })
+        .then(() => {
+          setIsLoading(false)
+          router.push('/')
+        })
+        .catch((err) => {
+          console.error('Login error:', err)
+          //   setError('로그인 처리 중 오류가 발생했습니다.')
+          setIsLoading(false)
+          setTimeout(() => router.push('/'), 2000)
+        })
+    } else {
+      setIsLoading(false)
     }
-  }, [])
+  }, [router])
 
-  return <div>로그인 처리 중...</div>
+  if (error) {
+    return <div>{error}</div>
+  }
+
+  return (
+    <article>
+      <h1>카카오 로그인</h1>
+      <p>로그인 처리 중입니다...</p>
+    </article>
+  )
 }
