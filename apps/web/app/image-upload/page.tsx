@@ -1,129 +1,205 @@
-"use client";
-import React, { useState, useRef, ChangeEvent } from "react";
-import { Upload, FileImage, Loader2 } from "lucide-react";
-import Image from "next/image";
+'use client'
+import React, { useState, useRef, ChangeEvent, useEffect } from 'react'
+import { Upload, ArrowLeft, Loader2 } from 'lucide-react'
+import Image from 'next/image'
+import { useRouter } from 'next/navigation'
 
-interface ProcessResponse {
-  result?: string;
-  success?: boolean;
-  error?: string;
-  details?: string;
-  imageUrl?: string;
+interface User {
+  id: string
+  kakao_id: string
+  nickname: string
+  profile_image_url?: string
 }
 
-export default function GeminiImageProcessor() {
-  const [selectedImage, setSelectedImage] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string>("");
-  const [isProcessing, setIsProcessing] = useState<boolean>(false);
-  const [result, setResult] = useState<string>("");
-  const [error, setError] = useState<string>("");
-  const fileInputRef = useRef<HTMLInputElement>(null);
+interface ProcessResponse {
+  imageUrl?: string
+  success?: boolean
+  error?: string
+  generatedImageId?: string
+}
+
+interface UploadResponse {
+  publicUrl: string
+  userImageId: string
+}
+
+export default function SimpleImageUpload() {
+  const [user, setUser] = useState<User | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [selectedImage, setSelectedImage] = useState<File | null>(null)
+  const [imagePreview, setImagePreview] = useState<string>('')
+  const [isProcessing, setIsProcessing] = useState<boolean>(false)
+  const [result, setResult] = useState<string>('')
+  const [error, setError] = useState<string>('')
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const router = useRouter()
+
+  useEffect(() => {
+    checkAuth()
+  }, [])
+
+  const checkAuth = async () => {
+    try {
+      const response = await fetch('/api/auth/me')
+      if (response.ok) {
+        const data = await response.json()
+        setUser(data.user)
+      } else {
+        router.push('/login')
+      }
+    } catch (error) {
+      console.error('Auth check failed:', error)
+      router.push('/login')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const handleImageSelect = (event: ChangeEvent<HTMLInputElement>): void => {
-    const file = event.target.files?.[0];
+    const file = event.target.files?.[0]
     if (file) {
-      if (!file.type.startsWith("image/")) {
-        setError("Please select a valid image file");
-        return;
+      if (!file.type.startsWith('image/')) {
+        setError('올바른 이미지 파일을 선택해주세요')
+        return
       }
 
-      setSelectedImage(file);
-      setError("");
-      setResult("");
+      setSelectedImage(file)
+      setError('')
+      setResult('')
 
-      // Create preview
-      const reader = new FileReader();
+      // 미리보기 생성
+      const reader = new FileReader()
       reader.onload = (e: ProgressEvent<FileReader>) => {
         if (e.target?.result) {
-          setImagePreview(e.target.result as string);
+          setImagePreview(e.target.result as string)
         }
-      };
-      reader.readAsDataURL(file);
+      }
+      reader.readAsDataURL(file)
     }
-  };
+  }
 
   const convertToBase64 = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
-      const reader = new FileReader();
+      const reader = new FileReader()
       reader.onload = () => {
-        if (typeof reader.result === "string") {
-          // Remove data:image/jpeg;base64, prefix
-          const base64 = reader.result.split(",")[1];
-          resolve(base64 as any);
+        if (typeof reader.result === 'string') {
+          const base64 = reader.result.split(',')[1]
+          resolve(base64 as any)
         } else {
-          reject(new Error("Failed to convert file to base64"));
+          reject(new Error('Failed to convert file to base64'))
         }
-      };
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
-  };
+      }
+      reader.onerror = reject
+      reader.readAsDataURL(file)
+    })
+  }
+
+  const uploadImage = async (file: File): Promise<UploadResponse> => {
+    const formData = new FormData()
+    formData.append('file', file)
+
+    const response = await fetch('/api/upload', {
+      method: 'POST',
+      body: formData,
+    })
+
+    if (!response.ok) {
+      const error = await response.json()
+      throw new Error(error.error || 'Upload failed')
+    }
+
+    return response.json()
+  }
 
   const processImage = async (): Promise<void> => {
     if (!selectedImage) {
-      setError("Please select an image first");
-      return;
+      setError('먼저 이미지를 선택해주세요')
+      return
     }
 
-    setIsProcessing(true);
-    setError("");
-    setResult("");
+    setIsProcessing(true)
+    setError('')
+    setResult('')
 
     try {
-      const imageBase64 = await convertToBase64(selectedImage);
+      // 1. 이미지 업로드
+      const uploadResult = await uploadImage(selectedImage)
 
-      const response = await fetch("/api/gemini-img2img", {
-        method: "POST",
+      // 2. Base64 변환
+      const imageBase64 = await convertToBase64(selectedImage)
+
+      // 3. 로컬 스토리지에서 감정 태그 가져오기
+      const savedTags = localStorage.getItem('lastEmotionTags')
+      const emotionTags = savedTags ? JSON.parse(savedTags) : []
+
+      // 4. Gemini로 이미지 처리
+      const response = await fetch('/api/gemini-img2img', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           imageBase64: imageBase64,
           mimeType: selectedImage.type,
+          userImageId: uploadResult.userImageId,
+          emotionTags: emotionTags,
         }),
-      });
+      })
 
-      const data: ProcessResponse = await response.json();
+      const data: ProcessResponse = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.error || "Failed to process image");
+        throw new Error(data.error || '이미지 처리에 실패했습니다')
       }
 
-      setResult(data.imageUrl || "No result received");
+      setResult(data.imageUrl || '')
     } catch (err) {
       const errorMessage =
         err instanceof Error
           ? err.message
-          : "An error occurred while processing the image";
-      setError(errorMessage);
+          : '이미지 처리 중 오류가 발생했습니다'
+      setError(errorMessage)
     } finally {
-      setIsProcessing(false);
+      setIsProcessing(false)
     }
-  };
+  }
 
-  const resetForm = (): void => {
-    setSelectedImage(null);
-    setImagePreview("");
-    setResult("");
-    setError("");
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
-  };
+  if (loading) {
+    return (
+      <div className="min-h-screen flex justify-center items-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    )
+  }
+
+  if (!user) return null
 
   return (
-    <div className="max-w-4xl mx-auto p-6 bg-white">
-      <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
-          Gemini Image Background Simplifier
-        </h1>
-        <p className="text-gray-600">
-          Transform your images into clean, minimal outdoor backgrounds
-        </p>
+    <div className="min-h-screen bg-gray-50">
+      {/* 헤더 */}
+      <div className="bg-white border-b px-4 py-3">
+        <div className="flex items-center">
+          <button
+            onClick={() => router.back()}
+            className="p-2 hover:bg-gray-100 rounded-full mr-3"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+          <h1 className="text-lg font-semibold">이미지 변환</h1>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Upload Section */}
+      <div className="max-w-md mx-auto p-6">
+        <div className="text-center mb-8">
+          <h2 className="text-xl font-bold text-gray-900 mb-2">
+            감정이 담긴 배경 생성
+          </h2>
+          <p className="text-gray-600 text-sm">
+            이미지를 업로드하면 평온한 자연 배경으로 변환됩니다
+          </p>
+        </div>
+
+        {/* 이미지 업로드 영역 */}
         <div className="space-y-6">
           <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-gray-400 transition-colors">
             <input
@@ -140,125 +216,83 @@ export default function GeminiImageProcessor() {
             >
               <Upload className="w-12 h-12 text-gray-400 mb-4" />
               <span className="text-lg font-medium text-gray-700 mb-2">
-                Choose an image to process
+                사진 선택하기
               </span>
               <span className="text-sm text-gray-500">
-                PNG, JPG, GIF up to 10MB
+                JPG, PNG 파일 업로드
               </span>
             </label>
           </div>
 
+          {/* 선택된 이미지 미리보기 */}
           {imagePreview && (
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-gray-900">
-                Original Image
-              </h3>
               <div className="relative">
                 <img
                   src={imagePreview}
-                  alt="Selected"
+                  alt="선택된 이미지"
                   className="w-full h-64 object-cover rounded-lg border"
+                />
+              </div>
+
+              <button
+                onClick={processImage}
+                disabled={isProcessing}
+                className="w-full bg-blue-600 text-white py-4 px-6 rounded-lg font-medium hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
+              >
+                {isProcessing ? (
+                  <>
+                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                    변환 중...
+                  </>
+                ) : (
+                  '이미지 변환하기'
+                )}
+              </button>
+            </div>
+          )}
+
+          {/* 에러 메시지 */}
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+              <p className="text-red-600 text-sm">{error}</p>
+            </div>
+          )}
+
+          {/* 변환된 결과 */}
+          {result && (
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-gray-900 text-center">
+                ✨ 변환 완료!
+              </h3>
+              <div className="bg-white border rounded-lg p-4">
+                <Image
+                  alt="변환된 이미지"
+                  src={result}
+                  width={400}
+                  height={400}
+                  className="w-full h-64 object-cover rounded-lg"
                 />
               </div>
             </div>
           )}
 
-          <div className="flex gap-3">
-            <button
-              onClick={processImage}
-              disabled={!selectedImage || isProcessing}
-              className="flex-1 bg-blue-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
-            >
-              {isProcessing ? (
-                <>
-                  <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                  Processing...
-                </>
-              ) : (
-                <>
-                  <FileImage className="w-5 h-5 mr-2" />
-                  Process Image
-                </>
-              )}
-            </button>
-
-            <button
-              onClick={resetForm}
-              className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-            >
-              Reset
-            </button>
-          </div>
-        </div>
-
-        {/* Results Section */}
-        <div className="space-y-6">
-          {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-              <div className="flex">
-                <div className="text-red-600">
-                  <h3 className="font-medium">Error</h3>
-                  <p className="text-sm mt-1">{error}</p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {result && (
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-gray-900">
-                Processing Result
-              </h3>
-              <div className="bg-gray-50 border rounded-lg p-4">
-                <Image alt="results" src={result} width={400} height={400} />
-              </div>
-            </div>
-          )}
-
+          {/* 처리 중 상태 */}
           {isProcessing && (
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <div className="flex items-center">
+              <div className="flex items-center justify-center">
                 <Loader2 className="w-5 h-5 text-blue-600 animate-spin mr-3" />
-                <div>
-                  <h3 className="font-medium text-blue-900">
-                    Processing Image
-                  </h3>
+                <div className="text-center">
+                  <h3 className="font-medium text-blue-900">이미지 변환 중</h3>
                   <p className="text-sm text-blue-700 mt-1">
-                    Analyzing and simplifying your image...
+                    잠시만 기다려주세요...
                   </p>
                 </div>
               </div>
             </div>
           )}
-
-          {!result && !error && !isProcessing && (
-            <div className="text-center py-12 text-gray-500">
-              <FileImage className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-              <p>Upload an image to see the processing results here</p>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Instructions */}
-      <div className="mt-12 bg-gray-50 rounded-lg p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-3">
-          How it works
-        </h3>
-        <div className="text-sm text-gray-600 space-y-2">
-          <p>
-            • Upload any image with complex backgrounds or multiple elements
-          </p>
-          <p>
-            • The AI will analyze and describe how to simplify it into a clean
-            outdoor background
-          </p>
-          <p>• Remove people, animals, vehicles, and man-made objects</p>
-          <p>
-            • Keep only natural elements like trees, sky, mountains, or grass
-          </p>
         </div>
       </div>
     </div>
-  );
+  )
 }

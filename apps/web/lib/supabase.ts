@@ -1,4 +1,3 @@
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { createClient } from '@supabase/supabase-js'
 
 export type Database = {
@@ -7,20 +6,52 @@ export type Database = {
       users: {
         Row: {
           id: string
-          name: string
-          kakao_id: string | null
+          kakao_id: string
+          nickname: string
+          profile_image_url: string | null
+          kakao_token: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          kakao_id: string
+          nickname: string
+          profile_image_url?: string | null
+          kakao_token: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          kakao_id?: string
+          nickname?: string
+          profile_image_url?: string | null
+          kakao_token?: string
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      user_sessions: {
+        Row: {
+          id: string
+          user_id: string
+          session_token: string
+          expires_at: string | null
           created_at: string
         }
         Insert: {
           id?: string
-          name: string
-          kakao_id?: string | null
+          user_id: string
+          session_token: string
+          expires_at?: string | null
           created_at?: string
         }
         Update: {
           id?: string
-          name?: string
-          kakao_id?: string | null
+          user_id?: string
+          session_token?: string
+          expires_at?: string | null
           created_at?: string
         }
       }
@@ -165,12 +196,15 @@ export type Database = {
   }
 }
 
-// 클라이언트 컴포넌트용
+// 클라이언트용 (데이터 조회만)
 export const createSupabaseClient = () =>
-  createClientComponentClient<Database>()
+  createClient<Database>(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+  )
 
-// 서비스 역할용 (관리자 작업)
-export const createSupabaseServiceClient = () =>
+// 서버용 (모든 권한)
+export const createSupabaseServerClient = () =>
   createClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!,

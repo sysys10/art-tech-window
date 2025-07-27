@@ -1,13 +1,51 @@
 'use client'
 
-import { useAuth } from '@/components/auth-provider'
+import { useEffect, useState } from 'react'
 import SpeechBtn from '@/components/speech-btn'
 import { Image, LogOut } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
+interface User {
+  id: string
+  kakao_id: string
+  nickname: string
+  profile_image_url?: string
+}
+
 export default function Home() {
-  const { user, loading, signOut } = useAuth()
+  const [user, setUser] = useState<User | null>(null)
+  const [loading, setLoading] = useState(true)
   const router = useRouter()
+
+  useEffect(() => {
+    checkAuth()
+  }, [])
+
+  const checkAuth = async () => {
+    try {
+      const response = await fetch('/api/auth/me')
+      if (response.ok) {
+        const data = await response.json()
+        setUser(data.user)
+      } else {
+        router.push('/login')
+      }
+    } catch (error) {
+      console.error('Auth check failed:', error)
+      router.push('/login')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleSignOut = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' })
+      router.push('/login')
+    } catch (error) {
+      console.error('Logout failed:', error)
+    }
+  }
 
   if (loading) {
     return (
@@ -18,13 +56,7 @@ export default function Home() {
   }
 
   if (!user) {
-    router.push('/login')
     return null
-  }
-
-  const handleSignOut = async () => {
-    await signOut()
-    router.push('/login')
   }
 
   return (
@@ -33,13 +65,7 @@ export default function Home() {
       <div className="flex justify-between items-center p-4 border-b">
         <div>
           <h1 className="text-lg font-semibold">Art Window</h1>
-          <p className="text-sm text-gray-600">
-            안녕하세요,{' '}
-            {user.user_metadata?.nickname ||
-              user.user_metadata?.name ||
-              '사용자'}
-            님
-          </p>
+          <p className="text-sm text-gray-600">안녕하세요, {user.nickname}님</p>
         </div>
         <button
           onClick={handleSignOut}

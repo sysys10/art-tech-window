@@ -8,27 +8,32 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const supabase = createSupabaseClient()
 
-  const handleKakaoLogin = async () => {
-    setLoading(true)
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'kakao',
-        options: {
-          redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || window.location.origin}/auth/callback`,
-          scopes: 'profile_nickname profile_image', // 이메일 제외하고 닉네임과 프로필 이미지만 요청
-        },
-      })
+  //   const handleKakaoLogin = async () => {
+  //     setLoading(true)
+  //     try {
+  //       const { error } = await supabase.auth.signInWithOAuth({
+  //         provider: 'kakao',
+  //         options: {
+  //           redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || window.location.origin}/auth/callback`,
+  //           scopes: 'profile_nickname profile_image', // 이메일 제외하고 닉네임과 프로필 이미지만 요청
+  //         },
+  //       })
 
-      if (error) {
-        console.error('Login error:', error)
-        alert('로그인 중 오류가 발생했습니다.')
-      }
-    } catch (error) {
-      console.error('Login error:', error)
-      alert('로그인 중 오류가 발생했습니다.')
-    } finally {
-      setLoading(false)
-    }
+  //       if (error) {
+  //         console.error('Login error:', error)
+  //         alert('로그인 중 오류가 발생했습니다.')
+  //       }
+  //     } catch (error) {
+  //       console.error('Login error:', error)
+  //       alert('로그인 중 오류가 발생했습니다.')
+  //     } finally {
+  //       setLoading(false)
+  //     }
+  //   }
+  const handleKakaoLogin = () => {
+    const kakaoAuthUrl = `https://kauth.kakao.com/oauth/authorize?client_id=${process.env.NEXT_PUBLIC_KAKAO_REST_API_KEY}&redirect_uri=${encodeURIComponent(window.location.origin + '/auth/kakao/callback')}&response_type=code&scope=profile_nickname,profile_image`
+
+    window.location.href = kakaoAuthUrl
   }
 
   return (
