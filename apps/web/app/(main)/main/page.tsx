@@ -2,7 +2,7 @@ import Image from 'next/image'
 
 export default function MainPage() {
   return (
-    <div className="max-w-xl mx-auto h-screen w-full bg-gray-300">
+    <div className="w-full h-screen  bg-gray-300">
       <div className="relative w-80 h-80">
         <div className="top-6 left-10 relative w-60 h-65 overflow-hidden">
           <Image

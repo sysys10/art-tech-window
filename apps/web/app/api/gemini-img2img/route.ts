@@ -36,8 +36,19 @@ export async function POST(req: NextRequest) {
       const supabase = createSupabaseServerClient()
 
       /* 2‑1) 클라이언트 데이터 추출 */
-      const { imageBase64, mimeType, userImageId, emotionTags } =
-        await req.json()
+      const {
+        imageBase64,
+        mimeType,
+        userImageId,
+        emotionTags,
+        prompt = `
+Transform the input image into a bright, dreamlike outdoor scene with a soft and ethereal atmosphere.
+Remove all unnecessary or complex elements.
+natural features such as a glowing sky, gentle trees, distant misty mountains, or serene grassy fields.
+The composition should be airy, uncluttered, and inspired by peaceful nature.
+Soft lighting, pastel tones, and a subtle glow are encouraged.
+`.trim(),
+      } = await req.json()
       if (!imageBase64 || !mimeType || !userImageId) {
         return NextResponse.json(
           { error: 'Missing required fields' },

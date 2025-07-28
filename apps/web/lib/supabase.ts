@@ -197,12 +197,12 @@ export type Database = {
 }
 
 // 클라이언트용 (데이터 조회만)
-export const createSupabaseClient = () =>
+const createSupabaseClient = () =>
   createClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
   )
-
+export const supabaseClient = createSupabaseClient()
 // 서버용 (모든 권한)
 export const createSupabaseServerClient = () =>
   createClient<Database>(

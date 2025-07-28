@@ -1,12 +1,10 @@
 'use client'
 
 import { useState } from 'react'
-import { createSupabaseClient } from '@/lib/supabase'
 import { MessageCircle, Loader2 } from 'lucide-react'
 
 export default function LoginPage() {
   const [loading, setLoading] = useState(false)
-  const supabase = createSupabaseClient()
 
   //   const handleKakaoLogin = async () => {
   //     setLoading(true)

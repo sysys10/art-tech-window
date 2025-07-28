@@ -52,7 +52,6 @@ export default function KakaoCallback() {
 
   return (
     <article>
-      <h1>카카오 로그인</h1>
       <p>로그인 처리 중입니다...</p>
     </article>
   )
