@@ -15,6 +15,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: 'Art Window',
   description: '감정을 담은 나만의 창문',
+  icons: {
+    icon: '/favicon.ico',
+  },
 }
 
 export default function RootLayout({

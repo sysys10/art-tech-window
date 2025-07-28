@@ -64,9 +64,7 @@ export default function GalleryPage() {
                 <ArrowLeft className="w-5 h-5 text-gray-600" />
               </button>
               <div>
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-                  감정 갤러리
-                </h1>
+                <h1 className="text-lg font-bold ">감정 갤러리</h1>
                 <p className="text-sm text-gray-500">
                   당신의 감정이 담긴 작품들
                 </p>
