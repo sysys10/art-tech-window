@@ -11,13 +11,11 @@ export default function KakaoCallback() {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    // Use window.location instead of useSearchParams
     const urlParams = new URLSearchParams(window.location.search)
     const code = urlParams.get('code')
     const errorParam = urlParams.get('error')
 
     if (errorParam) {
-      //   setError('로그인이 취소되었습니다.')
       setIsLoading(false)
       setTimeout(() => router.push('/'), 2000)
       return

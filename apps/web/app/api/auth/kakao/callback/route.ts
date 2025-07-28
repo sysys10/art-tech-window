@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
   })
 
   const { access_token } = await tokenResponse.json()
-
+  console.log(access_token)
   // 2. 기존 로그인 로직 실행
   const { user, sessionToken } = await loginOrCreateUser(access_token)
 
