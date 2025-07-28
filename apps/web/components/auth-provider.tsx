@@ -35,7 +35,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // 인증 상태 변화 감지
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
+    } = supabaseClient.auth.onAuthStateChange(async (event, session) => {
       setUser(session?.user ?? null)
       setLoading(false)
 
@@ -50,7 +50,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           user.user_metadata?.preferred_username ||
           '사용자'
 
-        await supabase
+        await supabaseClient
           .from('users')
           .upsert({
             id: user.id,
@@ -67,7 +67,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const signOut = async () => {
-    await supabase.auth.signOut()
+    await supabaseClient.auth.signOut()
   }
 
   return (
