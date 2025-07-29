@@ -22,9 +22,9 @@ export async function POST(req: NextRequest) {
   const { user, sessionToken } = await loginOrCreateUser(access_token)
 
   // 3. 세션 설정 후 응답
-  const response = NextResponse.json({ success: true })
-  response.cookies.set('session_token', sessionToken, {
-    /* ... */
-  })
+  const response = NextResponse.redirect(
+    `${process.env.NEXT_PUBLIC_SITE_URL}/home`,
+  )
+  response.cookies.set('session_token', sessionToken, {})
   return response
 }

@@ -1,6 +1,7 @@
 'use client'
 import { motion } from 'framer-motion'
 import { Settings, Baby, ArrowLeft, ArrowRight } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import {
   Radar,
   RadarChart,
@@ -30,8 +31,9 @@ export default function MyPage() {
 
 export function MainBottomMenu() {
   return (
-    <div className="w-full h-20 bg-white mt-4 rounded-2xl shadow-lg">
-      대충 배너
+    <div className="w-full mt-10 h-20">
+      연결하기
+      <div className="w-full h-20 bg-white rounded-2xl shadow-lg"></div>
     </div>
   )
 }
@@ -54,7 +56,7 @@ export function MainReportHexagon() {
         </p>
       </div>
       <div className="w-full h-52">
-        <div className="bg-white rounded-2xl shadow-md p-4 h-full">
+        <div className="bg-white rounded-2xl shadow-md p-4 border border-gray-100 h-full">
           <p className="leading-0 mt-2 text-gray-600">신지수 아기 심리상태</p>
           <ResponsiveContainer width="100%" height="100%">
             <RadarChart cx="50%" cy="50%" outerRadius="80%" data={data}>
@@ -76,6 +78,10 @@ export function MainReportHexagon() {
 }
 
 function MainBanner() {
+  const router = useRouter()
+  function handleChatHistoryClick() {
+    router.push('/chat/history')
+  }
   return (
     <motion.div
       className="h-52 w-full overflow-hidden relative"
@@ -92,6 +98,7 @@ function MainBanner() {
 
       <div className="flex w-full h-full relative z-10">
         <motion.div
+          onClick={handleChatHistoryClick}
           className="h-full flex-1 p-2"
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
