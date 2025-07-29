@@ -14,9 +14,9 @@ export async function POST(req: NextRequest) {
       const supabase = createSupabaseServerClient()
 
       const prompt = `
-다음 문장에서 느껴지는 감정을 키워드로 1~3개 추출해 주세요.
-감정 키워드는 '기쁨', '슬픔', '분노', '불안', '놀람', '혐오', '평온함', '만족', '후회', '설렘' 등의 단어 중에서 선택해주세요.
-문장: "${text}"
+### 다음 문장에서 느껴지는 감정을 키워드로 1~3개 추출해 주세요.
+### 감정 키워드는 '기쁨', '슬픔', '분노', '불안', '놀람', '혐오', '평온함', '만족', '후회', '설렘' 등의 단어 중에서 선택해주세요.
+## 문장: "${text}"
 결과:
 `
 
@@ -28,12 +28,11 @@ export async function POST(req: NextRequest) {
 
       const raw = completion.choices[0]!.message.content?.trim() || ''
       const tags = raw
-        .replace(/[^가-힣,]/g, '') // 한글, 쉼표만 남김
+        .replace(/[^가-힣,]/g, '')
         .split(',')
         .map((t) => t.trim())
         .filter((t) => t.length > 0)
 
-      // 감정 이벤트를 데이터베이스에 저장
       const { data: emotionEvent, error: eventError } = await supabase
         .from('user_emotion_events')
         .insert({

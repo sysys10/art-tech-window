@@ -1,4 +1,5 @@
 import BottomTab from '@/components/layout/BottomTab'
+import TopBar from '@/components/layout/TopBar'
 
 export default function MainLayout({
   children,
@@ -7,7 +8,8 @@ export default function MainLayout({
 }) {
   return (
     <div className="w-full h-full flex flex-col">
-      <div className="flex-1 overflow-y-auto">{children}</div>
+      <TopBar />
+      <div className="fixed max-w-lg w-full inset-0 mx-auto">{children}</div>
       <BottomTab />
     </div>
   )

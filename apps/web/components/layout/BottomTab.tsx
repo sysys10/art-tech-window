@@ -13,7 +13,7 @@ export default function BottomTab() {
     <div className="fixed bottom-0 left-0 right-0">
       <div className="max-w-lg mx-auto bg-white border-t border-gray-200 shadow-md">
         <div className="flex justify-around p-4">
-          <a href="/" className="text-gray-600 hover:text-blue-500">
+          <a href="/home" className="text-gray-600 hover:text-blue-500">
             <HomeIcon />
           </a>
           <a href="/gallery" className="text-gray-600 hover:text-blue-500">
