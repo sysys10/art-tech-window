@@ -1,7 +1,10 @@
 'use client'
 import { supabaseClient } from '@/lib/supabase'
+import axios from 'axios'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
+import { toast } from 'sonner'
+
 type EmotionValue = 'joy' | 'sadness' | 'anger' | 'fear'
 
 interface Option {
@@ -131,29 +134,49 @@ export default function EmotionPage() {
       handleComplete()
     }
   }
-
+  const [isLoading, setIsLoading] = useState(false)
   const handleComplete = async () => {
     // 결과 저장 및 다음 페이지로 이동
-
     console.log('완료된 답변:', answers)
+    try {
+      setIsLoading(true)
+
+      const { data } = await axios.post('/api/save-qna', {
+        myPlace: answers[0],
+        k: answers[1],
+        s: answers[2],
+        j: answers[3],
+        g: answers[4],
+        character_img_url: imgUrl,
+      })
+      setIsLoading(false)
+      if (data.success) {
+        router.push('/result/' + data.id)
+      }
+    } catch (err) {
+      setIsLoading(false)
+      toast('패치 중 에러')
+    }
+
     // router.push('/result') // 결과 페이지로 이동
   }
 
   const currentQ = questions[currentQuestion]
 
   return (
-    <div className="w-full pt-20 h-full bg-gradient-to-b from-blue-50 to-cyan-50 p-4">
-      <div className="max-w-4xl mx-auto h-full flex flex-col items-center justify-center">
+    <div className="w-full min-h-screen bg-gradient-to-b from-blue-50 to-purple-50 p-4 pt-20">
+      <div className="max-w-4xl mx-auto">
         {/* 헤더 */}
-        <div className="text-center mb-8 pt-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">
-            {name}의 마음 알아보기
+        <div className="text-center mb-6 pt-8">
+          <h1 className="text-3xl font-cafe24 font-bold text-[#46b5ff] mb-2">
+            {name}
+            <span className="text-gray-600">의 마음 알아보기</span>
           </h1>
           <p className="text-gray-600">솔직하게 대답해주면 도움이 될 거예요!</p>
         </div>
 
         {/* 진행 바 */}
-        <div className="w-full bg-gray-200 rounded-full h-3 mb-12">
+        <div className="w-full bg-gray-200 rounded-full h-3 mb-6">
           <div
             className="bg-gradient-to-r from-blue-400 to-purple-400 h-3 rounded-full transition-all duration-300"
             style={{
@@ -239,7 +262,7 @@ export default function EmotionPage() {
         {currentQuestion > 0 && (
           <button
             onClick={() => setCurrentQuestion(currentQuestion - 1)}
-            className="mt-8 w-full text-left px-6 py-2 text-gray-600 hover:text-gray-800 
+            className="mt-8 px-6 py-2 text-gray-600 hover:text-gray-800 
               underline underline-offset-4 transition-colors"
           >
             이전 질문으로

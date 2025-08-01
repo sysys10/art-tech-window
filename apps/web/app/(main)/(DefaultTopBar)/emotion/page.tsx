@@ -11,7 +11,7 @@ export default function EmotionRoute() {
 
 function EmotionSkeleton() {
   return (
-    <div className="min-h-screen bg-gradient-to-br pt-16 p-4 animate-pulse">
+    <div className="min-h-screen bg-gradient-to-br pt-20 p-4 animate-pulse">
       <div className="max-w-2xl mx-auto">
         <div className="text-center mb-8 pt-8">
           <div className="h-8 w-2/3 bg-gray-300 rounded mx-auto mb-2" />
