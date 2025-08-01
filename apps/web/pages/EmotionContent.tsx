@@ -2,8 +2,7 @@
 import { supabaseClient } from '@/lib/supabase'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
-
-type EmotionValue = 'positive' | 'neutral' | 'negative'
+type EmotionValue = 'joy' | 'sadness' | 'anger' | 'fear'
 
 interface Option {
   text: string
@@ -20,47 +19,59 @@ interface Question {
 const questions: Question[] = [
   {
     id: 0,
-    question: '좋아하는 공간은 어디야?',
+    question: '너만의 특별한 장소는 어디야?',
     type: 'text',
   },
+
+  // 기 - 그 공간에서의 일상적 감정
   {
     id: 1,
-    question: '요즘 기분이 어때?',
+    question: '그곳에 있으면 어떤 기분이 들어?',
     type: 'choice',
     options: [
-      { text: '행복해요! 😊', value: 'positive' },
-      { text: '그냥 그래요', value: 'neutral' },
-      { text: '조금 슬퍼요 😢', value: 'negative' },
+      { text: '마음이 편안하고 행복해져요 😊', value: 'joy' },
+      { text: '왠지 쓸쓸하고 외로워요', value: 'sadness' },
+      { text: '답답한 마음이 풀리지 않아요', value: 'anger' },
+      { text: '조금 불안하고 무서워요', value: 'fear' },
     ],
   },
+
+  // 승 - 그 공간에서의 특별한 순간
   {
     id: 2,
-    question: '친구들과 놀 때 어떤 기분이야?',
+    question: '그곳에서 가장 기억에 남는 순간은?',
     type: 'choice',
     options: [
-      { text: '정말 재미있어요!', value: 'positive' },
-      { text: '가끔 재미있어요', value: 'neutral' },
-      { text: '별로 재미없어요', value: 'negative' },
+      { text: '신나게 놀거나 웃었던 때가 생각나요! ✨', value: 'joy' },
+      { text: '울고 싶을 때 혼자 있었어요 😢', value: 'sadness' },
+      { text: '화가 나서 소리지르고 싶었어요', value: 'anger' },
+      { text: '무서운 일이 있어서 숨었어요', value: 'fear' },
     ],
   },
+
+  // 전 - 그 공간을 떠나야 할 때의 감정
   {
     id: 3,
-    question: '학교나 유치원에 가는 게 어때?',
+    question: '그곳을 떠나야 할 때는 어떤 마음이야?',
     type: 'choice',
     options: [
-      { text: '가는 게 좋아요!', value: 'positive' },
-      { text: '보통이에요', value: 'neutral' },
-      { text: '가기 싫어요', value: 'negative' },
+      { text: '다음에 또 올 생각에 설레요! 🌈', value: 'joy' },
+      { text: '떠나기 아쉽고 그리울 것 같아요 😔', value: 'sadness' },
+      { text: '왜 벌써 가야 하는지 짜증나요', value: 'anger' },
+      { text: '밖으로 나가는 게 걱정돼요', value: 'fear' },
     ],
   },
+
+  // 결 - 그 공간이 주는 의미
   {
     id: 4,
-    question: '잠들기 전에 무슨 생각을 해?',
+    question: '그곳은 너에게 어떤 곳이야?',
     type: 'choice',
     options: [
-      { text: '즐거운 생각이요!', value: 'positive' },
-      { text: '아무 생각 안 해요', value: 'neutral' },
-      { text: '걱정되는 게 있어요', value: 'negative' },
+      { text: '힘이 나고 기분 좋아지는 곳! 💪', value: 'joy' },
+      { text: '혼자 있고 싶을 때 가는 곳', value: 'sadness' },
+      { text: '억울한 마음을 달래는 곳', value: 'anger' },
+      { text: '안전하게 숨을 수 있는 곳', value: 'fear' },
     ],
   },
 ]
@@ -123,6 +134,7 @@ export default function EmotionPage() {
 
   const handleComplete = async () => {
     // 결과 저장 및 다음 페이지로 이동
+
     console.log('완료된 답변:', answers)
     // router.push('/result') // 결과 페이지로 이동
   }
@@ -130,7 +142,7 @@ export default function EmotionPage() {
   const currentQ = questions[currentQuestion]
 
   return (
-    <div className="w-full min-h-screen pt-20 bg-gradient-to-b from-blue-50 to-cyan-50 p-4">
+    <div className="w-full pt-20 h-full bg-gradient-to-b from-blue-50 to-cyan-50 p-4">
       <div className="max-w-4xl mx-auto h-full flex flex-col items-center justify-center">
         {/* 헤더 */}
         <div className="text-center mb-8 pt-8">

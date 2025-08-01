@@ -1,4 +1,3 @@
-import BottomTab from '@/components/layout/BottomTab'
 import TopBar from '@/components/layout/TopBar'
 
 export default function MainLayout({
