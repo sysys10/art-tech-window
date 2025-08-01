@@ -311,7 +311,7 @@ export default function EmotionPage() {
                       </button>
                       <span className="text-gray-600 text-sm">
                         {isMicActive
-                          ? '말씀하시는 중...'
+                          ? '말하는 중...'
                           : '마이크를 눌러 이야기해보세요'}
                       </span>
                     </div>
