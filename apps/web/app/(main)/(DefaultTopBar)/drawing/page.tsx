@@ -13,7 +13,7 @@ export default function DrawingPage() {
 
 function SkeletonUI() {
   return (
-    <div className="w-full h-full flex justify-center items-center pt-20">
+    <div className="w-full h-full flex justify-center items-center pt-20 bg-no-repeat bg-bottom bg-contain bg-[url('/images/bottom_sheet.svg')]">
       <div className="w-full h-full flex flex-col justify-center items-center">
         <div className="h-10 w-64 bg-gray-200 rounded animate-pulse mb-6" />
         <div className="flex gap-4 mb-4">

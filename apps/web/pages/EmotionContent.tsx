@@ -167,7 +167,7 @@ export default function EmotionPage() {
   const currentQuestionData: any = questions[currentQuestion]
 
   return (
-    <div className="min-h-screen pt-16 bg-gradient-to-br p-4">
+    <div className="w-full h-full flex justify-center items-center pt-6 bg-no-repeat bg-bottom bg-contain bg-[url('/images/bottom_sheet.svg')]">
       <div className="max-w-2xl mx-auto">
         {/* 헤더 */}
         <div className="text-center mb-8 pt-8">
@@ -226,7 +226,7 @@ export default function EmotionPage() {
             </div>
           </div>
           {/* 캐릭터 일러스트 */}
-          <div className="mt-8 w-100 absolute -top-24 -right-30 text-center">
+          <div className="mt-8 w-20 absolute -top-20 -right-30 text-center">
             <div className="inline-block animate-bounce">
               {imgUrl ? <img src={imgUrl} alt="캐릭터" /> : <div />}
             </div>
