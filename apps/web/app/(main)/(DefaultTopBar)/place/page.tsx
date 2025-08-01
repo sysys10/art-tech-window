@@ -1,12 +1,12 @@
 'use client'
 
 import { Suspense } from 'react'
-import DrawingContent from '@/pages/DrawingContent'
+import PlaceSelectContent from '@/pages/PlaceSelectContent'
 
 export default function DrawingPage() {
   return (
     <Suspense fallback={<SkeletonUI />}>
-      <DrawingContent />
+      <PlaceSelectContent />
     </Suspense>
   )
 }

@@ -22,7 +22,7 @@ export default function TopBar() {
     }
   }
   return (
-    <header className="w-full fixed top-0 left-1/2 -translate-x-1/2 h-16 py-4 shadow-bottom bg-white/80 backdrop-blur-sm border-b border-gray-100 z-50">
+    <header className="w-full fixed top-0 left-1/2 -translate-x-1/2 h-16 py-4 shadow-bottom bg-white/40 backdrop-blur-sm border-b border-gray-100 z-50">
       <div className="w-full h-full flex items-center justify-between px-4">
         {/* 로고 영역 */}
         <div

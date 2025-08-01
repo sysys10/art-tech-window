@@ -130,7 +130,7 @@ export default function DrawingPage() {
   }
 
   return (
-    <div className="w-full h-full flex justify-center items-center pt-20 bg-no-repeat bg-bottom bg-contain bg-[url('/images/bottom_sheet.svg')]">
+    <div className="w-full h-full flex justify-center items-center pt-20">
       <div className="w-full h-full flex flex-col justify-center items-center max-w-4xl">
         <h2 className="text-3xl font-cafe24 mb-8 text-center text-[#46b5ff]">
           {name}

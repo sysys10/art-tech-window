@@ -13,24 +13,71 @@ interface Option {
 interface Question {
   id: number
   question: string
-  options: Option[]
+  type: 'text' | 'choice'
+  options?: Option[]
 }
 
-interface EmotionCounts {
-  positive?: number
-  neutral?: number
-  negative?: number
-}
+const questions: Question[] = [
+  {
+    id: 0,
+    question: '좋아하는 공간은 어디야?',
+    type: 'text',
+  },
+  {
+    id: 1,
+    question: '요즘 기분이 어때?',
+    type: 'choice',
+    options: [
+      { text: '행복해요! 😊', value: 'positive' },
+      { text: '그냥 그래요', value: 'neutral' },
+      { text: '조금 슬퍼요 😢', value: 'negative' },
+    ],
+  },
+  {
+    id: 2,
+    question: '친구들과 놀 때 어떤 기분이야?',
+    type: 'choice',
+    options: [
+      { text: '정말 재미있어요!', value: 'positive' },
+      { text: '가끔 재미있어요', value: 'neutral' },
+      { text: '별로 재미없어요', value: 'negative' },
+    ],
+  },
+  {
+    id: 3,
+    question: '학교나 유치원에 가는 게 어때?',
+    type: 'choice',
+    options: [
+      { text: '가는 게 좋아요!', value: 'positive' },
+      { text: '보통이에요', value: 'neutral' },
+      { text: '가기 싫어요', value: 'negative' },
+    ],
+  },
+  {
+    id: 4,
+    question: '잠들기 전에 무슨 생각을 해?',
+    type: 'choice',
+    options: [
+      { text: '즐거운 생각이요!', value: 'positive' },
+      { text: '아무 생각 안 해요', value: 'neutral' },
+      { text: '걱정되는 게 있어요', value: 'negative' },
+    ],
+  },
+]
 
 export default function EmotionPage() {
   const searchParams = useSearchParams()
   const router = useRouter()
-  const [imgUrl, setImgUrl] = useState()
+  const [imgUrl, setImgUrl] = useState<string>()
   const name: string = searchParams?.get('name') || '친구'
   const userImageId: string =
     searchParams?.get('userImageId') || 'defaultImgUrl'
   const [currentQuestion, setCurrentQuestion] = useState<number>(0)
-  const [answers, setAnswers] = useState<EmotionValue[]>([])
+  const [answers, setAnswers] = useState<Record<number, string | EmotionValue>>(
+    {},
+  )
+  const [textInput, setTextInput] = useState<string>('')
+
   useEffect(() => {
     async function fetchImgUrl() {
       try {
@@ -42,196 +89,150 @@ export default function EmotionPage() {
         if (!data) {
           throw new Error()
         }
-        console.log(data)
         setImgUrl(data.image_url)
       } catch (err) {
         console.log(err)
       }
     }
     fetchImgUrl()
-  }, [])
-  const questions: Question[] = [
-    {
-      id: 1,
-      question: '오늘 아침에 일어났을 때 기분이 어땠어?',
-      options: [
-        { text: '😊 기분이 좋았어요', value: 'positive' },
-        { text: '😐 그냥 그랬어요', value: 'neutral' },
-        { text: '😢 별로였어요', value: 'negative' },
-      ],
-    },
-    {
-      id: 2,
-      question: '요즘 친구들과 놀 때 어때?',
-      options: [
-        { text: '🎉 정말 재미있어요', value: 'positive' },
-        { text: '🤔 가끔 재미있어요', value: 'neutral' },
-        { text: '😔 재미없어요', value: 'negative' },
-      ],
-    },
-    {
-      id: 3,
-      question: '새로운 것을 배울 때 어떤 기분이 들어?',
-      options: [
-        { text: '✨ 신나고 궁금해요', value: 'positive' },
-        { text: '😕 조금 어려워요', value: 'neutral' },
-        { text: '😰 너무 힘들어요', value: 'negative' },
-      ],
-    },
-    {
-      id: 4,
-      question: '혼자 있을 때는 무엇을 하고 싶어?',
-      options: [
-        { text: '🎨 재미있는 놀이를 해요', value: 'positive' },
-        { text: '📱 그냥 쉬고 싶어요', value: 'neutral' },
-        { text: '😴 아무것도 하기 싫어요', value: 'negative' },
-      ],
-    },
-    {
-      id: 5,
-      question: '가족들과 함께 있을 때 기분이 어때?',
-      options: [
-        { text: '🏠 편하고 행복해요', value: 'positive' },
-        { text: '🤷 보통이에요', value: 'neutral' },
-        { text: '😣 불편해요', value: 'negative' },
-      ],
-    },
-    {
-      id: 6,
-      question: '요즘 잠은 잘 자고 있어?',
-      options: [
-        { text: '😴 푹 잘 자요', value: 'positive' },
-        { text: '🌙 가끔 잘 못 자요', value: 'neutral' },
-        { text: '😫 자주 못 자요', value: 'negative' },
-      ],
-    },
-    {
-      id: 7,
-      question: '학교나 유치원에 가는 게 어때?',
-      options: [
-        { text: '🎒 가고 싶어요', value: 'positive' },
-        { text: '😐 그냥 가요', value: 'neutral' },
-        { text: '😟 가기 싫어요', value: 'negative' },
-      ],
-    },
-    {
-      id: 8,
-      question: '요즘 가장 많이 드는 감정은 뭐야?',
-      options: [
-        { text: '😊 행복하고 즐거워요', value: 'positive' },
-        { text: '😌 평범해요', value: 'neutral' },
-        { text: '😢 슬프거나 화나요', value: 'negative' },
-      ],
-    },
-  ]
+  }, [userImageId])
 
-  const handleAnswer = (value: EmotionValue): void => {
-    const newAnswers: EmotionValue[] = [...answers, value]
-    setAnswers(newAnswers)
-
-    if (currentQuestion < questions.length - 1) {
-      setCurrentQuestion(currentQuestion + 1)
-    } else {
-      // 감정 분석 완료
-      analyzeEmotion(newAnswers)
+  const handleTextSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (textInput.trim()) {
+      setAnswers({ ...answers, [currentQuestion]: textInput })
+      setTextInput('')
+      if (currentQuestion < questions.length - 1) {
+        setCurrentQuestion(currentQuestion + 1)
+      } else {
+        // 완료 처리
+        handleComplete()
+      }
     }
   }
 
-  const analyzeEmotion = (allAnswers: EmotionValue[]): void => {
-    const emotionCounts: EmotionCounts = allAnswers.reduce<EmotionCounts>(
-      (acc, answer) => {
-        acc[answer] = (acc[answer] || 0) + 1
-        return acc
-      },
-      {},
-    )
-
-    let dominantEmotion: EmotionValue = 'neutral'
-    let maxCount: number = 0
-
-    const entries = Object.entries(emotionCounts) as [EmotionValue, number][]
-    entries.forEach(([emotion, count]) => {
-      if (count > maxCount) {
-        maxCount = count
-        dominantEmotion = emotion
-      }
-    })
-
-    // 결과 페이지로 이동
-    router.push(
-      `/result?name=${encodeURIComponent(name)}&emotion=${dominantEmotion}&score=${maxCount}`,
-    )
+  const handleOptionSelect = (value: EmotionValue) => {
+    setAnswers({ ...answers, [currentQuestion]: value })
+    if (currentQuestion < questions.length - 1) {
+      setCurrentQuestion(currentQuestion + 1)
+    } else {
+      // 완료 처리
+      handleComplete()
+    }
   }
 
-  const progress: number = ((currentQuestion + 1) / questions.length) * 100
-  const currentQuestionData: any = questions[currentQuestion]
+  const handleComplete = async () => {
+    // 결과 저장 및 다음 페이지로 이동
+    console.log('완료된 답변:', answers)
+    // router.push('/result') // 결과 페이지로 이동
+  }
+
+  const currentQ = questions[currentQuestion]
 
   return (
-    <div className="w-full h-full flex justify-center items-center pt-6 bg-no-repeat bg-bottom bg-contain bg-[url('/images/bottom_sheet.svg')]">
-      <div className="max-w-2xl mx-auto">
+    <div className="w-full min-h-screen pt-28 bg-gradient-to-b from-blue-50 to-cyan-50 p-4">
+      <div className="max-w-4xl mx-auto h-full flex flex-col items-center justify-center">
         {/* 헤더 */}
         <div className="text-center mb-8 pt-8">
-          <h1 className="text-3xl font-cafe24 font-bold text-gray-800 mb-2">
+          <h1 className="text-3xl font-bold text-gray-800 mb-2">
             {name}의 마음 알아보기
           </h1>
           <p className="text-gray-600">솔직하게 대답해주면 도움이 될 거예요!</p>
         </div>
-        <div className="w-full relative">
-          <div className="">
-            {/* 진행 바 */}
-            <div className="bg-white/50 rounded-full h-4 mb-8 overflow-hidden">
+
+        {/* 진행 바 */}
+        <div className="w-full bg-gray-200 rounded-full h-3 mb-12">
+          <div
+            className="bg-gradient-to-r from-blue-400 to-purple-400 h-3 rounded-full transition-all duration-300"
+            style={{
+              width: `${((currentQuestion + 1) / questions.length) * 100}%`,
+            }}
+          />
+        </div>
+
+        {/* 메인 컨텐츠 */}
+        <div className="relative flex items-center justify-center">
+          {/* 캐릭터와 말풍선 */}
+          <div className="relative">
+            {/* 캐릭터 */}
+            <div className="absolute -left-32 top-0">
+              {imgUrl ? (
+                <img
+                  src={imgUrl}
+                  alt="캐릭터"
+                  className="w-28 h-auto object-contain"
+                />
+              ) : (
+                <div className="w-28 h-28 bg-gray-200 rounded-full animate-pulse" />
+              )}
+            </div>
+
+            {/* 말풍선 */}
+            <div className="relative bg-white rounded-3xl shadow-lg p-8 ml-12 min-w-[400px]">
+              {/* 말풍선 꼬리 */}
               <div
-                className="bg-gradient-to-r from-purple-400 to-pink-400 h-full transition-all duration-500 ease-out"
-                style={{ width: `${progress}%` }}
-              />
-            </div>
+                className="absolute -left-4 top-8 w-0 h-0 
+                border-t-[15px] border-t-transparent
+                border-r-[20px] border-r-white
+                border-b-[15px] border-b-transparent"
+              ></div>
 
-            {/* 질문 카드 */}
-            <div className="bg-white rounded-3xl shadow-xl p-8 transform transition-all duration-300 hover:scale-[1.02]">
-              <div className="text-center mb-8">
-                <div className="inline-block bg-purple-100 text-purple-600 px-4 py-2 rounded-full text-sm font-medium mb-4">
-                  질문 {currentQuestion + 1} / {questions.length}
+              {/* 질문 */}
+              <h2 className="text-xl font-semibold text-gray-800 mb-6">
+                {currentQ?.question}
+              </h2>
+
+              {/* 답변 입력/선택 */}
+              {currentQ?.type === 'text' ? (
+                <form onSubmit={handleTextSubmit} className="space-y-4">
+                  <input
+                    type="text"
+                    value={textInput}
+                    onChange={(e) => setTextInput(e.target.value)}
+                    placeholder="여기에 답을 써주세요..."
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl 
+                      focus:border-purple-400 focus:outline-none transition-colors"
+                    autoFocus
+                  />
+                  <button
+                    type="submit"
+                    disabled={!textInput.trim()}
+                    className="w-full py-3 bg-gradient-to-r from-blue-400 to-purple-400 
+                      text-white rounded-xl font-semibold hover:from-blue-500 hover:to-purple-500 
+                      disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                  >
+                    다음으로
+                  </button>
+                </form>
+              ) : (
+                <div className="space-y-3">
+                  {currentQ?.options?.map((option, index) => (
+                    <button
+                      key={index}
+                      onClick={() => handleOptionSelect(option.value)}
+                      className="w-full p-4 text-left bg-gray-50 hover:bg-purple-100 
+                        rounded-xl transition-colors duration-200 hover:scale-[1.02] 
+                        transform border-2 border-transparent hover:border-purple-300"
+                    >
+                      <span className="text-lg">{option.text}</span>
+                    </button>
+                  ))}
                 </div>
-                <h2 className="text-2xl font-bold text-gray-800 leading-relaxed">
-                  {currentQuestionData.question}
-                </h2>
-              </div>
-
-              {/* 선택지 */}
-              <div className="space-y-3">
-                {currentQuestionData.options.map(
-                  (option: Option, index: number) => {
-                    const [emoji, ...textParts] = option.text.split(' ')
-                    const buttonText = textParts.join(' ')
-
-                    return (
-                      <button
-                        key={index}
-                        onClick={() => handleAnswer(option.value)}
-                        className="w-full p-4 bg-gradient-to-r from-purple-50 to-pink-50 hover:from-purple-100 hover:to-pink-100 rounded-2xl border-2 border-transparent hover:border-purple-300 transition-all duration-300 transform hover:scale-[1.02] hover:shadow-lg"
-                        type="button"
-                        aria-label={`선택: ${option.text}`}
-                      >
-                        <span className="text-lg font-medium text-gray-700 flex items-center justify-center gap-3">
-                          <span className="text-2xl" aria-hidden="true">
-                            {emoji}
-                          </span>
-                          <span>{buttonText}</span>
-                        </span>
-                      </button>
-                    )
-                  },
-                )}
-              </div>
-            </div>
-          </div>
-          {/* 캐릭터 일러스트 */}
-          <div className="mt-8 w-20 absolute -top-20 -right-30 text-center">
-            <div className="inline-block animate-bounce">
-              {imgUrl ? <img src={imgUrl} alt="캐릭터" /> : <div />}
+              )}
             </div>
           </div>
         </div>
+
+        {/* 이전 버튼 (첫 질문이 아닐 때만) */}
+        {currentQuestion > 0 && (
+          <button
+            onClick={() => setCurrentQuestion(currentQuestion - 1)}
+            className="mt-8 w-full text-left px-6 py-2 text-gray-600 hover:text-gray-800 
+              underline underline-offset-4 transition-colors"
+          >
+            이전 질문으로
+          </button>
+        )}
       </div>
     </div>
   )
