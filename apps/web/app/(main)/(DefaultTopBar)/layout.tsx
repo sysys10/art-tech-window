@@ -9,8 +9,8 @@ export default function MainLayout({
   return (
     <div className="w-full h-full flex flex-col">
       <TopBar />
-      <div className="fixed max-w-lg w-full inset-0 mx-auto">{children}</div>
-      <BottomTab />
+      <div className="w-full h-full">{children}</div>
+      {/* <BottomTab /> */}
     </div>
   )
 }

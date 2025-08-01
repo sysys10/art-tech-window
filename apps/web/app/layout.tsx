@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import './globals.css'
-
+import { cafe24ssurround } from './fonts'
 const geistSans = Geist({
   variable: '--font-geist-sans',
   subsets: ['latin'],
@@ -28,7 +28,7 @@ export default function RootLayout({
   return (
     <html lang="ko" className="bg-gray-50">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} mx-auto max-w-lg h-screen w-full antialiased`}
+        className={`${cafe24ssurround.variable} ${geistSans.variable} ${geistMono.variable} h-screen w-full antialiased`}
       >
         {children}
       </body>
