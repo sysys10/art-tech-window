@@ -1,6 +1,7 @@
 'use client'
+import { supabaseClient } from '@/lib/supabase'
 import { useSearchParams, useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 type EmotionValue = 'positive' | 'neutral' | 'negative'
 
@@ -24,11 +25,31 @@ interface EmotionCounts {
 export default function EmotionPage() {
   const searchParams = useSearchParams()
   const router = useRouter()
+  const [imgUrl, setImgUrl] = useState()
   const name: string = searchParams?.get('name') || '친구'
-
+  const userImageId: string =
+    searchParams?.get('userImageId') || 'defaultImgUrl'
   const [currentQuestion, setCurrentQuestion] = useState<number>(0)
   const [answers, setAnswers] = useState<EmotionValue[]>([])
-
+  useEffect(() => {
+    async function fetchImgUrl() {
+      try {
+        const { data, error } = await supabaseClient
+          .from('user_images')
+          .select('image_url')
+          .eq('id', userImageId)
+          .single()
+        if (!data) {
+          throw new Error()
+        }
+        console.log(data)
+        setImgUrl(data.image_url)
+      } catch (err) {
+        console.log(err)
+      }
+    }
+    fetchImgUrl()
+  }, [])
   const questions: Question[] = [
     {
       id: 1,
@@ -146,69 +167,69 @@ export default function EmotionPage() {
   const currentQuestionData: any = questions[currentQuestion]
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-100 via-pink-100 to-yellow-100 p-4">
+    <div className="min-h-screen pt-16 bg-gradient-to-br p-4">
       <div className="max-w-2xl mx-auto">
         {/* 헤더 */}
         <div className="text-center mb-8 pt-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">
+          <h1 className="text-3xl font-cafe24 font-bold text-gray-800 mb-2">
             {name}의 마음 알아보기
           </h1>
           <p className="text-gray-600">솔직하게 대답해주면 도움이 될 거예요!</p>
         </div>
-
-        {/* 진행 바 */}
-        <div className="bg-white/50 rounded-full h-4 mb-8 overflow-hidden">
-          <div
-            className="bg-gradient-to-r from-purple-400 to-pink-400 h-full transition-all duration-500 ease-out"
-            style={{ width: `${progress}%` }}
-          />
-        </div>
-
-        {/* 질문 카드 */}
-        <div className="bg-white rounded-3xl shadow-xl p-8 transform transition-all duration-300 hover:scale-[1.02]">
-          <div className="text-center mb-8">
-            <div className="inline-block bg-purple-100 text-purple-600 px-4 py-2 rounded-full text-sm font-medium mb-4">
-              질문 {currentQuestion + 1} / {questions.length}
+        <div className="w-full relative">
+          <div className="">
+            {/* 진행 바 */}
+            <div className="bg-white/50 rounded-full h-4 mb-8 overflow-hidden">
+              <div
+                className="bg-gradient-to-r from-purple-400 to-pink-400 h-full transition-all duration-500 ease-out"
+                style={{ width: `${progress}%` }}
+              />
             </div>
-            <h2 className="text-2xl font-bold text-gray-800 leading-relaxed">
-              {currentQuestionData.question}
-            </h2>
+
+            {/* 질문 카드 */}
+            <div className="bg-white rounded-3xl shadow-xl p-8 transform transition-all duration-300 hover:scale-[1.02]">
+              <div className="text-center mb-8">
+                <div className="inline-block bg-purple-100 text-purple-600 px-4 py-2 rounded-full text-sm font-medium mb-4">
+                  질문 {currentQuestion + 1} / {questions.length}
+                </div>
+                <h2 className="text-2xl font-bold text-gray-800 leading-relaxed">
+                  {currentQuestionData.question}
+                </h2>
+              </div>
+
+              {/* 선택지 */}
+              <div className="space-y-3">
+                {currentQuestionData.options.map(
+                  (option: Option, index: number) => {
+                    const [emoji, ...textParts] = option.text.split(' ')
+                    const buttonText = textParts.join(' ')
+
+                    return (
+                      <button
+                        key={index}
+                        onClick={() => handleAnswer(option.value)}
+                        className="w-full p-4 bg-gradient-to-r from-purple-50 to-pink-50 hover:from-purple-100 hover:to-pink-100 rounded-2xl border-2 border-transparent hover:border-purple-300 transition-all duration-300 transform hover:scale-[1.02] hover:shadow-lg"
+                        type="button"
+                        aria-label={`선택: ${option.text}`}
+                      >
+                        <span className="text-lg font-medium text-gray-700 flex items-center justify-center gap-3">
+                          <span className="text-2xl" aria-hidden="true">
+                            {emoji}
+                          </span>
+                          <span>{buttonText}</span>
+                        </span>
+                      </button>
+                    )
+                  },
+                )}
+              </div>
+            </div>
           </div>
-
-          {/* 선택지 */}
-          <div className="space-y-3">
-            {currentQuestionData.options.map(
-              (option: Option, index: number) => {
-                const [emoji, ...textParts] = option.text.split(' ')
-                const buttonText = textParts.join(' ')
-
-                return (
-                  <button
-                    key={index}
-                    onClick={() => handleAnswer(option.value)}
-                    className="w-full p-4 bg-gradient-to-r from-purple-50 to-pink-50 hover:from-purple-100 hover:to-pink-100 rounded-2xl border-2 border-transparent hover:border-purple-300 transition-all duration-300 transform hover:scale-[1.02] hover:shadow-lg"
-                    type="button"
-                    aria-label={`선택: ${option.text}`}
-                  >
-                    <span className="text-lg font-medium text-gray-700 flex items-center justify-center gap-3">
-                      <span className="text-2xl" aria-hidden="true">
-                        {emoji}
-                      </span>
-                      <span>{buttonText}</span>
-                    </span>
-                  </button>
-                )
-              },
-            )}
-          </div>
-        </div>
-
-        {/* 캐릭터 일러스트 */}
-        <div className="mt-8 text-center">
-          <div className="inline-block animate-bounce">
-            <span className="text-6xl" aria-hidden="true">
-              🌈
-            </span>
+          {/* 캐릭터 일러스트 */}
+          <div className="mt-8 w-100 absolute -top-24 -right-30 text-center">
+            <div className="inline-block animate-bounce">
+              {imgUrl ? <img src={imgUrl} alt="캐릭터" /> : <div />}
+            </div>
           </div>
         </div>
       </div>
