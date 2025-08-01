@@ -4,6 +4,7 @@
 import { supabaseClient } from '@/lib/supabase'
 import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
+import { Button } from '@workspace/ui/components/button'
 
 type Story = { content: string; character_img_url: string }
 
@@ -14,6 +15,7 @@ export default function ResultContent({ id }: { id: string }) {
     { start: number; end: number; text: string }[]
   >([])
   const [activeIdx, setActiveIdx] = useState(0)
+  const [isPlaying, setIsPlaying] = useState(false)
   const audioRef = useRef<HTMLAudioElement>(null)
 
   // 스토리 조회
@@ -54,12 +56,16 @@ export default function ResultContent({ id }: { id: string }) {
     })()
   }, [story])
 
-  // audioUrl 변경될 때 자동 재생
+  // Play / Pause 제어
   useEffect(() => {
-    if (audioUrl && audioRef.current) {
-      audioRef.current.play().catch(() => {})
+    const audio = audioRef.current
+    if (!audio) return
+    if (isPlaying) {
+      audio.play().catch(() => setIsPlaying(false))
+    } else {
+      audio.pause()
     }
-  }, [audioUrl])
+  }, [isPlaying])
 
   // 자막 타임코드
   const onLoadedMetadata = () => {
@@ -86,6 +92,8 @@ export default function ResultContent({ id }: { id: string }) {
     if (idx !== -1 && idx !== activeIdx) setActiveIdx(idx)
   }
 
+  const onEnded = () => setIsPlaying(false)
+
   if (!story) return null
 
   return (
@@ -94,17 +102,28 @@ export default function ResultContent({ id }: { id: string }) {
         src={story.character_img_url}
         alt="character"
         className={`w-56 h-56 rounded-full object-cover ${
-          audioUrl ? 'animate-pulse' : ''
+          audioUrl && isPlaying ? 'animate-pulse' : ''
         }`}
       />
+
+      {/* 재생 버튼 */}
+      {audioUrl && (
+        <Button
+          onClick={() => setIsPlaying((p) => !p)}
+          className="px-6 py-2 text-base"
+        >
+          {isPlaying ? '⏸ 일시정지' : '▶ 재생'}
+        </Button>
+      )}
 
       {audioUrl && (
         <audio
           ref={audioRef}
           src={audioUrl}
-          autoPlay
           onLoadedMetadata={onLoadedMetadata}
           onTimeUpdate={onTimeUpdate}
+          onEnded={onEnded}
+          playsInline
         />
       )}
 

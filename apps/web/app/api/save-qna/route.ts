@@ -57,7 +57,7 @@ Now create a story with:
 export const POST = async (req: NextRequest) => {
   return withAuth(req, async (req, user) => {
     try {
-      const { myPlace, k, s, j, g, character_img_url } = await req.json()
+      const { myPlace, k, s, j, g, exp, character_img_url } = await req.json()
 
       if (!myPlace || !k) {
         return NextResponse.json(
@@ -76,7 +76,7 @@ export const POST = async (req: NextRequest) => {
         .replace('{beginning}', k)
         .replace('{development}', s) // 승
         .replace('{climax}', j) // 전
-
+        .replace('{exp}', exp)
       const completion = await openai.chat.completions.create({
         model: 'gpt-3.5-turbo',
         messages: [{ role: 'system', content: prompt }],
