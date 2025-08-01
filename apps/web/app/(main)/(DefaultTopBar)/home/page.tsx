@@ -1,11 +1,9 @@
 'use client'
 
-import { useAuth } from '@/components/auth-provider'
-import { supabaseClient } from '@/lib/supabase'
 import { Input } from '@workspace/ui/components/input'
 import axios from 'axios'
 import { motion } from 'framer-motion'
-import { Settings, Baby, ArrowLeft, ArrowRight } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
@@ -24,7 +22,7 @@ export default function MyPage() {
 
   return (
     <motion.div
-      className="w-full h-full flex justify-center items-center bg-no-repeat bg-bottom bg-contain bg-[url('/images/bottom_sheet.svg')]"
+      className="w-full h-full flex justify-center items-center"
       initial={{ opacity: 0, y: 50 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, ease: 'easeOut' }}
