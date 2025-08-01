@@ -130,7 +130,7 @@ export default function EmotionPage() {
   const currentQ = questions[currentQuestion]
 
   return (
-    <div className="w-full min-h-screen pt-28 bg-gradient-to-b from-blue-50 to-cyan-50 p-4">
+    <div className="w-full min-h-screen pt-20 bg-gradient-to-b from-blue-50 to-cyan-50 p-4">
       <div className="max-w-4xl mx-auto h-full flex flex-col items-center justify-center">
         {/* 헤더 */}
         <div className="text-center mb-8 pt-8">
