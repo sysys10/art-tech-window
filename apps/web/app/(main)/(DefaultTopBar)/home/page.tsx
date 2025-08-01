@@ -51,7 +51,7 @@ export default function MyPage() {
           transition={{ delay: 0.5 }}
         >
           <Input
-            className="flex-1 h-10 text-gray-500 text-lg font-cafe24 font-light"
+            className="flex-1 h-12 text-gray-500 text-xl pl-2 rounded-lg font-cafe24 font-light"
             onChange={(e) => {
               setName(e.target.value)
             }}

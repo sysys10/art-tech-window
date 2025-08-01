@@ -143,11 +143,11 @@ export default function ResultContent({ id }: { id: string }) {
               </span>
             ))}
       </div>
-      <div className="absolute top-1/2 -translate-y-1/2 right-20 p-4 bg-sky-200 rounded-full ">
-        <ArrowRight
-          className="cursor-pointer"
-          onClick={() => router.push('/book-recommend')}
-        />
+      <div
+        onClick={() => router.push('/book-recommend/' + id)}
+        className="absolute top-1/2 -translate-y-1/2 right-20 p-4 bg-sky-200 rounded-full "
+      >
+        <ArrowRight className="cursor-pointer" />
       </div>
     </div>
   )
