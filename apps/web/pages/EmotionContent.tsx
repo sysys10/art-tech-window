@@ -123,6 +123,7 @@ export default function EmotionPage() {
   useEffect(() => {
     if (questions[currentQuestion]?.type === 'speechText') {
       setTextInput(transcript)
+      setAnswers((prev) => ({ ...prev, [currentQuestion]: transcript }))
     }
   }, [transcript, currentQuestion])
 
@@ -264,7 +265,9 @@ export default function EmotionPage() {
                       key="text-input"
                       type="text"
                       value={textInput}
-                      onChange={(e) => setTextInput(e.target.value)}
+                      onChange={(e) => {
+                        setTextInput(e.target.value)
+                      }}
                       placeholder="여기에 답을 써주세요..."
                       className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-400 focus:outline-none transition-colors"
                       autoFocus
@@ -316,7 +319,13 @@ export default function EmotionPage() {
                     {/* Textarea bound to STT/transcript */}
                     <motion.textarea
                       value={textInput}
-                      onChange={(e) => setTextInput(e.target.value)}
+                      onChange={(e) => {
+                        setTextInput(e.target.value)
+                        setAnswers((prev) => ({
+                          ...prev,
+                          [currentQuestion]: e.target.value,
+                        }))
+                      }}
                       placeholder="목소리 또는 글로 너의 경험을 들려줘..."
                       rows={4}
                       className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-400 focus:outline-none transition-colors resize-none"

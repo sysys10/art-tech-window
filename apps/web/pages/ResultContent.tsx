@@ -5,6 +5,8 @@ import { supabaseClient } from '@/lib/supabase'
 import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { Button } from '@workspace/ui/components/button'
+import { ArrowRight } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 
 type Story = { content: string; character_img_url: string }
 
@@ -83,7 +85,7 @@ export default function ResultContent({ id }: { id: string }) {
     })
     setCaptions(caps)
   }
-
+  const router = useRouter()
   // 재생 위치 자막 인덱스
   const onTimeUpdate = () => {
     if (!audioRef.current) return
@@ -140,6 +142,12 @@ export default function ResultContent({ id }: { id: string }) {
                 {c.text + ' '}
               </span>
             ))}
+      </div>
+      <div className="absolute top-1/2 -translate-y-1/2 right-20 p-4 bg-sky-200 rounded-full ">
+        <ArrowRight
+          className="cursor-pointer"
+          onClick={() => router.push('/book-recommend')}
+        />
       </div>
     </div>
   )

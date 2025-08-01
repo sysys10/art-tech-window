@@ -3,7 +3,7 @@ import { TextToSpeechClient } from '@google-cloud/text-to-speech'
 
 // Google 인증 초기화
 const client = new TextToSpeechClient({
-  credentials: JSON.parse(process.env.GCP_TTS_KEY as string),
+  credentials: JSON.parse(process.env.GCP_TTS_KEY || 'no'),
 })
 
 export async function POST(req: NextRequest) {
